@@ -66,8 +66,10 @@ board:
 .asciiz "*************************    *****************    **************"
 
 snake: .space 64
-
-
+#s4 will store head address
+#s5 will store tail address
+#s6 will store beginning of space for snake addresses
+#s7 will store end of space for snake addresses
 
 
 
@@ -134,11 +136,28 @@ placeFrogs:
 	
 	
 initializeSnake:
-	#for this I was going to place the snake in memory
-	
-	
-	
-	
+#s4 will store head address
+#s5 will store tail address
+#s6 will store beginning of space for snake addresses
+#s7 will store end of space for snake addresses
+	la $s6, snake
+	addi $s7, $s6, 0x40
+	addi $s5, $s6, 0
+	addi $s4, $s5, 15 #creats a space of 16 bytes because it starts out with 8 segments and each coordinate needs two bytes
+	li $t1, 4
+	li $t2, 31
+	li $t3, 0 #counter
+	addi $t4, $s5, 0
+	initializeloop:
+		beq $t3, 8, endinitializeloop
+		sb $t1, 0($t4)
+		sb $t2, 1($t4)
+		addi $t1, $t1, 1
+		addi $t4, $t4, 2
+		addi $t3, $t3, 1
+		j initializeloop
+	endinitializeloop:
+	jal _updateSnake
 	
 
 MAIN:
@@ -157,6 +176,31 @@ j EXIT
 
 
 
+
+# void _updateSnake(address head, address tail)
+	#goes through the addresses of the snake and updates the board accordingly
+	#arguments: $s4 is head, $s5 is tail
+	#trashes: $t4-$t5
+	#returns: none
+	
+_updateSnake:
+	addi $sp, $sp, -4 #put return address on the stack
+	sw $ra, 0($sp)
+	
+	addi $t4, $s5, 0
+	addi $t5, $s4, -1
+	li $a2, 2 #sets color to yellow
+	updateloop:
+		lb $a0, 0($t4)
+		lb $a1, 1($t4)
+		jal _setLED
+		beq $t4, $t5, endupdateloop
+		addi $t4, $t4, 2
+		j updateloop
+	endupdateloop:
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	jr $ra
 
 
 # void _setLED(int x, int y, int color)
