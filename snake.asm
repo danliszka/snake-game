@@ -65,7 +65,7 @@ board:
 .ascii "*                                                              *"
 .asciiz "*************************    *****************    **************"
 
-snake: 
+snake: .space 64
 
 
 
@@ -112,7 +112,7 @@ boardloop:
 li $t4, 0
 placeFrogs:
 	addi $t4, $t4, 1
-	beq $t4, 0x15, updateSnake
+	beq $t4, 0x15, initializeSnake
 	li $a1, 0x40
 	li $v0, 42
 	syscall
@@ -133,8 +133,8 @@ placeFrogs:
 	
 	
 	
-updateSnake:
-	
+initializeSnake:
+	#for this I was going to place the snake in memory
 	
 	
 	
