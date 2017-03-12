@@ -157,7 +157,17 @@ initializeSnake:
 		addi $t3, $t3, 1
 		j initializeloop
 	endinitializeloop:
-	jal _updateSnake
+	addi $t4, $s5, 0
+	addi $t5, $s4, -1
+	li $a2, 2 #sets color to yellow
+	updateloop:
+		lb $a0, 0($t4)
+		lb $a1, 1($t4)
+		jal _setLED
+		beq $t4, $t5, endupdateloop
+		addi $t4, $t4, 2
+		j updateloop
+	endupdateloop:
 	
 
 MAIN:
@@ -187,17 +197,7 @@ _updateSnake:
 	addi $sp, $sp, -4 #put return address on the stack
 	sw $ra, 0($sp)
 	
-	addi $t4, $s5, 0
-	addi $t5, $s4, -1
-	li $a2, 2 #sets color to yellow
-	updateloop:
-		lb $a0, 0($t4)
-		lb $a1, 1($t4)
-		jal _setLED
-		beq $t4, $t5, endupdateloop
-		addi $t4, $t4, 2
-		j updateloop
-	endupdateloop:
+	
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	jr $ra
