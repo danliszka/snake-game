@@ -66,8 +66,11 @@ board:
 .asciiz "*************************    *****************    **************"
 
 snake: .space 64
-#s4 will store head address
-#s5 will store tail address
+
+#s2 will store game time
+#s3 will store number of frogs snake has eaten
+#s4 will store head address of snake
+#s5 will store tail address of snake
 #s6 will store beginning of space for snake addresses
 #s7 will store end of space for snake addresses
 
@@ -85,7 +88,7 @@ li $t6, 0 #counter
 la $s0, board
 boardloop:
 
-	beq $t5, 0x40, placeFrogs
+	beq $t5, 0x40, initializeSnake
 	
 	innerloop:
 	
@@ -105,41 +108,17 @@ boardloop:
 	endinnerloop:
 	li $t4, 0
 	addi $t5, $t5, 1
-	j boardloop
-	
+j boardloop
 
-#randomly places frogs on the board
-#t4: counter
-#t5: color
-li $t4, 0
-placeFrogs:
-	addi $t4, $t4, 1
-	beq $t4, 0x15, initializeSnake
-	li $a1, 0x40
-	li $v0, 42
-	syscall
-	add $t6,$zero,$a0 
-	li $a1, 0x40
-	li $v0, 42
-	syscall
-	add $a1, $zero,$t6
-	
-	jal _getLED
-	addi $t5, $v0, 0
-	bne $t5, 0, placeFrogs
-	
-	li $a2, 3
-	jal _setLED
-	j placeFrogs
-	
-	
-	
-	
+
+
 initializeSnake:
 #s4 will store head address
 #s5 will store tail address
 #s6 will store beginning of space for snake addresses
 #s7 will store end of space for snake addresses
+li $s1, 0
+li $s0, 0
 	la $s6, snake
 	addi $s7, $s6, 0x40
 	addi $s5, $s6, 0
@@ -168,7 +147,42 @@ initializeSnake:
 		addi $t4, $t4, 2
 		j updateloop
 	endupdateloop:
+	li $t4, 0
+	j placeFrogs
+
+
+
+
+
+#randomly places frogs on the board
+#t4: counter
+#t5: color
+placeFrogs:
 	
+	beq $t4, 0x15, MAIN
+	li $a1, 0x3f
+	li $v0, 42
+	syscall
+	addi $t6,$a0,1
+	li $a1, 0x3f
+	li $v0, 42
+	syscall
+	add $a1, $zero,$t6
+	addi $a0, $a0, 1
+	
+	jal _getLED
+	addi $t5, $v0, 0
+	bne $t5, 0, placeFrogs
+	
+	li $a2, 3
+	jal _setLED
+	addi $t4, $t4, 1
+	j placeFrogs
+	
+	
+	
+	
+
 
 MAIN:
 
