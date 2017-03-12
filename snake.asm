@@ -186,6 +186,21 @@ j EXIT
 
 
 
+# void _moveSnake (address head, address tail)
+	#checks if key is pressed, then checks what new coordinate will be next, 
+	#then based on color of next coordinate:
+		#it will turn
+		#keep going in same direction
+		#keep going and decrement tail address to make snake longer
+	#arguments: $s4 is head, $s5 is tail
+	#trashes: 
+	#returns: none
+	
+	
+_moveSnake:
+	
+
+
 
 # void _updateSnake(address head, address tail)
 	#goes through the addresses of the snake and updates the board accordingly
@@ -197,10 +212,23 @@ _updateSnake:
 	addi $sp, $sp, -4 #put return address on the stack
 	sw $ra, 0($sp)
 	
+		lb $a0, -1($s4)#this portion sets the new head light to yellow
+		lb $a1, 0($s4)
+		li $a2, 2
+		jal _setLED
+		lb $a0, 0($s5) #this portion below sets the tail light to zero, then erases the coordinates from memory
+		lb $a1, 1($s5)
+		li $a2, 0
+		sb $zero, 0($s5)
+		sb $zero, 1($s5)
+		addi $s5, $s5, 2
+		jal _setLED
 	
-	lw $ra, 0($sp)
+	lw $ra, 0($sp)#grab old return address from stack
 	addi $sp, $sp, 4
 	jr $ra
+
+
 
 
 # void _setLED(int x, int y, int color)
