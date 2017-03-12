@@ -67,6 +67,8 @@ board:
 
 snake: .space 64
 
+#s0 will store increment for x
+#s1 will store increment for y
 #s2 will store game time
 #s3 will store number of frogs snake has eaten
 #s4 will store head address of snake
@@ -148,7 +150,9 @@ li $s0, 0
 		j updateloop
 	endupdateloop:
 	li $t4, 0
-	j placeFrogs
+	
+#This is randomly put in but its purpose is to start the snake going left
+li $s0, -1
 
 
 
@@ -207,13 +211,86 @@ j EXIT
 		#keep going in same direction
 		#keep going and decrement tail address to make snake longer
 	#arguments: $s4 is head, $s5 is tail
-	#trashes: 
+	#trashes: $t6,$t7
 	#returns: none
 	
 	
 _moveSnake:
-	
+	addi $sp, $sp, -4 #put return address on the stack
+	sw $ra, 0($sp)
 
+	li $t6, 0xFFFF0000
+	lb $t7, 0($t6)
+	bne $t7, 1, continueMoving
+		setdirection:
+		#resets the incrementers to zero for re-initialization with new direction
+		li $s0, 0
+		li $s1, 0
+		li $t6, 0xFFFF0004
+		lb $t7, 0($t6)
+		bne $t7, 0xE0, next1 #up
+			bne $s1, 1, continueMoving #prevents from moving in the exact oposite direction
+			li $s1, -1
+			j continueMoving
+		next1:
+		bne $t7, 0xE1, next2 #down
+			bne $s1, -1, continueMoving #prevents from moving in the exact oposite direction	
+			li $s1, 1
+			j continueMoving
+		next2:
+		bne $t7, 0xE2, next3 #left
+			bne $s0, 1, continueMoving #prevents from moving in the exact oposite direction
+			li $s0, -1
+			j continueMoving
+		next3:
+		bne $t7, 0xE3, next4 #right
+			bne $s1, -1, continueMoving #prevents from moving in the exact oposite direction
+			li $s0, 1
+			j continueMoving
+		next4:
+		bne $t7, 0x42, continueMoving #DONT KNOW WHAT TO DO WITH THIS BUTTON
+			
+	continueMoving:
+	#loads current head
+	lb $t6, 0($s4)#x coor
+	lb $t7, 0($s5)#y coor
+	#adds incrementers for new location
+	add $a0, $t6, $s0
+	add $a1, $t7, $s1
+	#get color at new location
+	jal _getLED
+	#increment head address by 2
+	addi $s4, $s4, 2
+	bne $s4, $s7, black
+	#rolls over to beginning of memory for data structure if at end
+	addi $s4, $s6, 0
+	
+	black:
+		bne $v0, 0, red
+		#if black:
+		
+		#checks if on edge
+		
+		j finishmovesnake
+	red:
+		bne $v0, 1, yellow
+		#if red:
+		
+		j finishmovesnake
+	yellow:
+		bne $v0, 2, green
+		#if yellow:
+		j EXIT
+	green:
+		#if green:
+		
+		
+	finishmovesnake:
+	jal _updateSnake
+	
+	lw $ra, 0($sp)#grab old return address from stack
+	addi $sp, $sp, 4
+	jr $ra
 
 
 # void _updateSnake(address head, address tail)
@@ -226,16 +303,22 @@ _updateSnake:
 	addi $sp, $sp, -4 #put return address on the stack
 	sw $ra, 0($sp)
 	
-		lb $a0, -1($s4)#this portion sets the new head light to yellow
+		#this portion sets the new head light to yellow
+		lb $a0, -1($s4)
 		lb $a1, 0($s4)
 		li $a2, 2
 		jal _setLED
-		lb $a0, 0($s5) #this portion below sets the tail light to zero, then erases the coordinates from memory
+		#this portion below sets the tail light to zero, then erases the coordinates from memory
+		lb $a0, 0($s5) 
 		lb $a1, 1($s5)
 		li $a2, 0
 		sb $zero, 0($s5)
 		sb $zero, 1($s5)
 		addi $s5, $s5, 2
+		bne $s5, $s7, notAtEnd
+			#if at end of memory for snake data structure, places at beginning
+			addi $s5, $s6, 0
+		notAtEnd:
 		jal _setLED
 	
 	lw $ra, 0($sp)#grab old return address from stack
