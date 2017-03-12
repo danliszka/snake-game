@@ -1,3 +1,6 @@
+#Daniel Liszka
+#Jenn Gingerich
+
 .data
 board: 
 .ascii "*************************    *****************    **************"
@@ -270,11 +273,28 @@ _moveSnake:
 		#if black:
 		
 		#checks if on edge
-		
+		leftEdge:
+			bne $a0, -1, rightEdge
+			li $a0, 63
+			j finishmovesnake
+		rightEdge:
+			bne $a0, 64, topEdge
+			li $a0, 0
+			j finishmovesnake
+		topEdge:
+			bne $a1, -1, bottomEdge
+			li $a1, 63
+			j finishmovesnake
+		bottomEdge:
+			bne $a1, 64, finishmovesnake #if not on an edge and only black in the way
+			li $a1, 0
+			
 		j finishmovesnake
-	red:
+		
+	red:#NOT FINISHED-------
 		bne $v0, 1, yellow
 		#if red:
+		
 		
 		j finishmovesnake
 	yellow:
@@ -284,8 +304,20 @@ _moveSnake:
 	green:
 		#if green:
 		
-		
+		#increment counter for frogs
+		addi $s3, $s3, 1
+		bne $s3, 0x15, skipEatAllFrogs
+			#if all frogs eaten, set final yellow and end game
+			li $a2, 2
+			jal _setLED
+			j EXIT
+		skipEatAllFrogs:
+		#decrement tail memory location so snake gets longer because updateSnake will increment the tail
+		subi $s5, $s5, -2
 	finishmovesnake:
+		#store new coordinates in new memory location for head
+		sb $a0, -1($s4)
+		sb $a1, 0($s4)
 	jal _updateSnake
 	
 	lw $ra, 0($sp)#grab old return address from stack
