@@ -2,7 +2,6 @@
 #Jenn Gingerich
 
 #TO DO:
-#-work on memory roll-over for tail
 #-what happens when a red dot is next
 
 .data
@@ -211,7 +210,7 @@ j EXIT
 #void _delay()
 	#delays based on how many iterations of a loop has to be completed
 	#arguments: none
-	#trashes: $t0-$t2
+	#trashes: $t0
 	#returns: none
 	
 _delay:
@@ -241,30 +240,36 @@ _moveSnake:
 	li $t6, 0xFFFF0000
 	lb $t7, 0($t6)
 	addi $t8, $t7, 0 #used to show if a button was pressed later
+	#stores original increment values for use to keep from moving in opposite direction
+	addi $t0, $s0, 0
+	addi $t1, $s1, 0
 	bne $t7, 1, continueMoving
 		setdirection:
 		#resets the incrementers to zero for re-initialization with new direction
-		li $s0, 0
-		li $s1, 0
+		
 		li $t6, 0xFFFF0004
 		lbu $t7, 0($t6)
 		bne $t7, 0xE0, next1 #up
-			beq $s1, 1, continueMoving #prevents from moving in the exact oposite direction
+			beq $t1, 1, continueMoving #prevents from moving in the exact oposite direction
+			li $s0, 0
 			li $s1, -1
 			j continueMoving
 		next1:
 		bne $t7, 0xE1, next2 #down
-			beq $s1, -1, continueMoving #prevents from moving in the exact oposite direction	
+			beq $t1, -1, continueMoving #prevents from moving in the exact oposite direction
+			li $s0, 0	
 			li $s1, 1
 			j continueMoving
 		next2:
 		bne $t7, 0xE2, next3 #left
-			beq $s0, 1, continueMoving #prevents from moving in the exact oposite direction
+			beq $t0, 1, continueMoving #prevents from moving in the exact oposite direction
+			li $s1, 0
 			li $s0, -1
 			j continueMoving
 		next3:
 		bne $t7, 0xE3, next4 #right
-			beq $s1, -1, continueMoving #prevents from moving in the exact oposite direction
+			beq $t0, -1, continueMoving #prevents from moving in the exact oposite direction
+			li $s1, 0
 			li $s0, 1
 			j continueMoving
 		next4:
