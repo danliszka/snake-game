@@ -1,6 +1,10 @@
 #Daniel Liszka
 #Jenn Gingerich
 
+#TO DO:
+#-work on memory roll-over for tail
+#-what happens when a red dot is next
+
 .data
 board: 
 .ascii "*************************    *****************    **************"
@@ -155,7 +159,8 @@ li $s0, 0
 	li $t4, 0
 	
 #This is randomly put in but its purpose is to start the snake going left
-li $s0, -1
+li $s0, 1
+li $s1, 0
 
 
 
@@ -192,18 +197,29 @@ placeFrogs:
 
 
 MAIN:
-
-
-
-
-
-
-
-
+	
+	jal _delay
+	addi $s2, $s2, 1 #increments how many times there was a delay then will convert to total time at end
+	jal _moveSnake
+	bne $s2, 100, MAIN
 
 
 
 j EXIT
+
+
+#void _delay()
+	#delays based on how many iterations of a loop has to be completed
+	#arguments: none
+	#trashes: $t0-$t2
+	#returns: none
+	
+_delay:
+	li $t0, 1000
+	delayloop:
+	subi $t0, $t0, 1
+	bnez $t0, delayloop
+	jr $ra
 
 
 
@@ -214,7 +230,7 @@ j EXIT
 		#keep going in same direction
 		#keep going and decrement tail address to make snake longer
 	#arguments: $s4 is head, $s5 is tail
-	#trashes: $t6,$t7
+	#trashes: $t6,$t7,$t8
 	#returns: none
 	
 	
@@ -224,30 +240,31 @@ _moveSnake:
 
 	li $t6, 0xFFFF0000
 	lb $t7, 0($t6)
+	addi $t8, $t7, 0 #used to show if a button was pressed later
 	bne $t7, 1, continueMoving
 		setdirection:
 		#resets the incrementers to zero for re-initialization with new direction
 		li $s0, 0
 		li $s1, 0
 		li $t6, 0xFFFF0004
-		lb $t7, 0($t6)
+		lbu $t7, 0($t6)
 		bne $t7, 0xE0, next1 #up
-			bne $s1, 1, continueMoving #prevents from moving in the exact oposite direction
+			beq $s1, 1, continueMoving #prevents from moving in the exact oposite direction
 			li $s1, -1
 			j continueMoving
 		next1:
 		bne $t7, 0xE1, next2 #down
-			bne $s1, -1, continueMoving #prevents from moving in the exact oposite direction	
+			beq $s1, -1, continueMoving #prevents from moving in the exact oposite direction	
 			li $s1, 1
 			j continueMoving
 		next2:
 		bne $t7, 0xE2, next3 #left
-			bne $s0, 1, continueMoving #prevents from moving in the exact oposite direction
+			beq $s0, 1, continueMoving #prevents from moving in the exact oposite direction
 			li $s0, -1
 			j continueMoving
 		next3:
 		bne $t7, 0xE3, next4 #right
-			bne $s1, -1, continueMoving #prevents from moving in the exact oposite direction
+			beq $s1, -1, continueMoving #prevents from moving in the exact oposite direction
 			li $s0, 1
 			j continueMoving
 		next4:
@@ -255,9 +272,9 @@ _moveSnake:
 			
 	continueMoving:
 	#loads current head
-	lb $t6, 0($s4)#x coor
-	lb $t7, 0($s5)#y coor
-	#adds incrementers for new location
+	lb $t6, -1($s4)#x coor
+	lb $t7, 0($s4)#y coor
+	#adds incrementers for new coordinate
 	add $a0, $t6, $s0
 	add $a1, $t7, $s1
 	#get color at new location
@@ -295,6 +312,12 @@ _moveSnake:
 		bne $v0, 1, yellow
 		#if red:
 		
+		beqz $t8, leftOrRight
+		
+		
+		leftOrRight: j EXIT #DO NOT KEEP THIS IN
+		
+		
 		
 		j finishmovesnake
 	yellow:
@@ -312,14 +335,22 @@ _moveSnake:
 			jal _setLED
 			j EXIT
 		skipEatAllFrogs:
-		#decrement tail memory location so snake gets longer because updateSnake will increment the tail
-		subi $s5, $s5, -2
+		#This purposefully skips updateSnake because the tail should stay in the same place
+		sb $a0, -1($s4)
+		sb $a1, 0($s4)
+		lb $a0, -1($s4)
+		lb $a1, 0($s4)
+		li $a2, 2
+		jal _setLED
+		j exitmovesnake
+		
 	finishmovesnake:
 		#store new coordinates in new memory location for head
 		sb $a0, -1($s4)
 		sb $a1, 0($s4)
 	jal _updateSnake
 	
+	exitmovesnake:
 	lw $ra, 0($sp)#grab old return address from stack
 	addi $sp, $sp, 4
 	jr $ra
