@@ -131,7 +131,7 @@ li $s0, 0
 	la $s6, snake
 	addi $s7, $s6, 0x40
 	addi $s5, $s6, 0
-	addi $s4, $s5, 15 #creats a space of 16 bytes because it starts out with 8 segments and each coordinate needs two bytes
+	addi $s4, $s5, 14 #creats a space of 16 bytes because it starts out with 8 segments and each coordinate needs two bytes
 	li $t1, 4
 	li $t2, 31
 	li $t3, 0 #counter
@@ -146,7 +146,7 @@ li $s0, 0
 		j initializeloop
 	endinitializeloop:
 	addi $t4, $s5, 0
-	addi $t5, $s4, -1
+	addi $t5, $s4, 0
 	li $a2, 2 #sets color to yellow
 	updateloop:
 		lb $a0, 0($t4)
@@ -201,7 +201,7 @@ MAIN:
 	jal _delay
 	addi $s2, $s2, 1 #increments how many times there was a delay then will convert to total time at end
 	jal _moveSnake
-	bne $s2, 100, MAIN
+	bne $s2, 1000, MAIN
 
 
 
@@ -215,7 +215,7 @@ j EXIT
 	#returns: none
 	
 _delay:
-	li $t0, 1000
+	li $t0, 200
 	delayloop:
 	subi $t0, $t0, 1
 	bnez $t0, delayloop
@@ -269,42 +269,45 @@ _moveSnake:
 			j continueMoving
 		next4:
 		bne $t7, 0x42, continueMoving #DONT KNOW WHAT TO DO WITH THIS BUTTON
+		j EXIT
 			
 	continueMoving:
 	#loads current head
-	lb $t6, -1($s4)#x coor
-	lb $t7, 0($s4)#y coor
+	lb $t6, 0($s4)#x coor
+	lb $t7, 1($s4)#y coor
 	#adds incrementers for new coordinate
 	add $a0, $t6, $s0
 	add $a1, $t7, $s1
+	#checks if on edge
+		leftEdge:
+			bne $a0, -1, rightEdge
+			li $a0, 63
+			j checkLED
+		rightEdge:
+			bne $a0, 64, topEdge
+			li $a0, 0
+			j checkLED
+		topEdge:
+			bne $a1, -1, bottomEdge
+			li $a1, 63
+			j checkLED
+		bottomEdge:
+			bne $a1, 64, checkLED #if not on an edge and only black in the way
+			li $a1, 0
+	checkLED:
 	#get color at new location
 	jal _getLED
 	#increment head address by 2
 	addi $s4, $s4, 2
 	bne $s4, $s7, black
-	#rolls over to beginning of memory for data structure if at end
-	addi $s4, $s6, 0
+		#rolls over to beginning of memory for data structure if at end
+		addi $s4, $s6, 0
 	
 	black:
 		bne $v0, 0, red
 		#if black:
 		
-		#checks if on edge
-		leftEdge:
-			bne $a0, -1, rightEdge
-			li $a0, 63
-			j finishmovesnake
-		rightEdge:
-			bne $a0, 64, topEdge
-			li $a0, 0
-			j finishmovesnake
-		topEdge:
-			bne $a1, -1, bottomEdge
-			li $a1, 63
-			j finishmovesnake
-		bottomEdge:
-			bne $a1, 64, finishmovesnake #if not on an edge and only black in the way
-			li $a1, 0
+		
 			
 		j finishmovesnake
 		
@@ -336,18 +339,16 @@ _moveSnake:
 			j EXIT
 		skipEatAllFrogs:
 		#This purposefully skips updateSnake because the tail should stay in the same place
-		sb $a0, -1($s4)
-		sb $a1, 0($s4)
-		lb $a0, -1($s4)
-		lb $a1, 0($s4)
+		sb $a0, 0($s4)
+		sb $a1, 1($s4)
 		li $a2, 2
 		jal _setLED
 		j exitmovesnake
 		
 	finishmovesnake:
 		#store new coordinates in new memory location for head
-		sb $a0, -1($s4)
-		sb $a1, 0($s4)
+		sb $a0, 0($s4)
+		sb $a1, 1($s4)
 	jal _updateSnake
 	
 	exitmovesnake:
@@ -367,8 +368,8 @@ _updateSnake:
 	sw $ra, 0($sp)
 	
 		#this portion sets the new head light to yellow
-		lb $a0, -1($s4)
-		lb $a1, 0($s4)
+		lb $a0, 0($s4)
+		lb $a1, 1($s4)
 		li $a2, 2
 		jal _setLED
 		#this portion below sets the tail light to zero, then erases the coordinates from memory
@@ -378,7 +379,8 @@ _updateSnake:
 		sb $zero, 0($s5)
 		sb $zero, 1($s5)
 		addi $s5, $s5, 2
-		bne $s5, $s7, notAtEnd
+		addi $t5, $s7, 0
+		bne $s5, $t5, notAtEnd
 			#if at end of memory for snake data structure, places at beginning
 			addi $s5, $s6, 0
 		notAtEnd:
