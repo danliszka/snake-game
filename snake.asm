@@ -7,8 +7,8 @@
 .data
 board: 
 .ascii "*************************    *****************    **************"
-.ascii "*                                                              *"
-.ascii "*                                                              *"
+.ascii "*                       *    *                                 *"
+.ascii "*                       *    *                                 *"
 .ascii "*                                                              *"
 .ascii "*                                                              *"
 .ascii "*                                                              *"
@@ -37,10 +37,6 @@ board:
 .ascii "*                                                              *"
 .ascii "*                                                              *"
 .ascii "*                                                              *"
-.ascii "*                *                                             *"
-.ascii "*                ****                                          *"
-.ascii "*                *                                             *"
-.ascii "*                *                                             *"
 .ascii "*                                                              *"
 .ascii "*                                                              *"
 .ascii "*                                                              *"
@@ -56,6 +52,13 @@ board:
 .ascii "*                                                              *"
 .ascii "*                                                              *"
 .ascii "*                                                              *"
+.ascii "*                 *********                                    *"
+.ascii "*                 *       *                                    *"
+.ascii "*                 *       *                                    *"
+.ascii "*                 *       ***                                  *"
+.ascii "*                 *                                            *"
+.ascii "*                 *                                            *"
+.ascii "*                 ***********                                  *"
 .ascii "*                                                              *"
 .ascii "*                                                              *"
 .ascii "*                                                              *"
@@ -64,11 +67,8 @@ board:
 .ascii "*                                                              *"
 .ascii "*                                                              *"
 .ascii "*                                                              *"
-.ascii "*                                                              *"
-.ascii "*                                                              *"
-.ascii "*                                                              *"
-.ascii "*                                                              *"
-.ascii "*                                                              *"
+.ascii "*                       *    *                                 *"
+.ascii "*                       *    *                                 *"
 .asciiz "*************************    *****************    **************"
 
 snake: .space 64
@@ -200,7 +200,7 @@ MAIN:
 	jal _delay
 	addi $s2, $s2, 1 #increments how many times there was a delay then will convert to total time at end
 	jal _moveSnake
-	bne $s2, 1000, MAIN
+	bne $s2, 1000, MAIN #allow for a maximum of 1000 movements
 
 
 
