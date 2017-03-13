@@ -87,6 +87,7 @@ snake: .space 64
 
 
 
+
 .text
 
 #write the board to the display
