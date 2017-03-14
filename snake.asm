@@ -73,6 +73,11 @@ board:
 
 snake: .space 64
 
+A: .asciiz ""
+B: .asciiz "Game over\nThe playing  time  was\n"
+C: .asciiz " ms. The game  score\n"
+D: .asciiz " was "
+E: .asciiz " frogs."
 #s0 will store increment for x
 #s1 will store increment for y
 #s2 will store game time
@@ -83,9 +88,6 @@ snake: .space 64
 #s7 will store end of space for snake addresses
 
 
-
-
-##hello
 
 
 .text
@@ -215,7 +217,7 @@ j EXIT
 	#returns: none
 	
 _delay:
-	li $t0, 200
+	li $t0, 100000
 	delayloop:
 	subi $t0, $t0, 1
 	bnez $t0, delayloop
@@ -458,3 +460,23 @@ _getLED:
 	
 	
 EXIT:
+	li $v0, 4
+	la $a0, B
+	syscall
+	
+	li $v0, 4
+	la $a0, C
+	syscall
+	
+	li $v0, 4
+	la $a0, D
+	syscall
+	
+	li $v0, 1
+	move $a0, $s3
+	syscall
+	
+	li $v0, 4
+	la $a0, E
+	syscall
+	
