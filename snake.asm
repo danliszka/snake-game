@@ -78,6 +78,7 @@ B: .asciiz "Game over\nThe playing  time  was\n"
 C: .asciiz " ms. The game  score\n"
 D: .asciiz " was "
 E: .asciiz " frogs."
+
 #s0 will store increment for x
 #s1 will store increment for y
 #s2 will store game time
@@ -217,7 +218,8 @@ j EXIT
 	#returns: none
 	
 _delay:
-	li $t0, 100000
+	#li $t0, 100000 #USE FOR PC
+	li $t0, 175 #USE FOR MAC
 	delayloop:
 	subi $t0, $t0, 1
 	bnez $t0, delayloop
