@@ -204,7 +204,7 @@ MAIN:
 	jal _delay
 	addi $s2, $s2, 1 #increments how many times there was a delay then will convert to total time at end
 	jal _moveSnake
-	bne $s2, 1000, MAIN #allow for a maximum of 1000 movements
+	bne $s2, 5000, MAIN #allow for a maximum of 5000 movements
 
 
 
@@ -305,6 +305,9 @@ _moveSnake:
 			bne $a1, 64, checkLED #if not on an edge and only black in the way
 			li $a1, 0
 	checkLED:
+	#places t0 and t1 in other registers before they are trashed
+	addi $t4, $t0, 0
+	addi $t5, $t1, 0
 	#get color at new location
 	jal _getLED
 	#increment head address by 2
@@ -326,13 +329,65 @@ _moveSnake:
 		#if red:
 		
 		beqz $t8, leftOrRight
-		
-		
-		leftOrRight: j EXIT #DO NOT KEEP THIS IN
-		
-		
-		
+		#This assembly prevents turning into a wall while adjecent to it
+		#subtract new increment values and add old ones to ignore change in direction
+		sub $a0, $a0, $s0
+		sub $a1, $a1, $s1
+		add $a0, $a0, $t4
+		add $a1, $a1, $t5
 		j finishmovesnake
+		
+		
+		leftOrRight: 
+		#This assembly moves the snake left or right depending on what is available, and if nothing is it ends the game
+		#check if moving vertically
+		beqz $s1, horizontal
+		#if moving vertically:
+		#check left
+		sub $a0, $a0, $s0
+		sub $a1, $a1, $s1
+		li $s0, -1
+		li $s1, 0
+		add $a0, $a0, $s0
+		jal _getLED
+		beq $v0, 0, finishmovesnake
+		beq $v0, 2, yellow
+		beq $v0, 3, green
+		#if it is red on the left, checks right
+		sub $a0, $a0, $s0
+		li $s0, 1
+		add $a0, $a0, $s0
+		jal _getLED
+		beq $v0, 0, finishmovesnake
+		beq $v0, 2, yellow
+		beq $v0, 3, green
+		#if red again:
+		j EXIT
+		
+		
+		horizontal:
+		#if moving horizontal:
+		#check up
+		sub $a0, $a0, $s0
+		sub $a1, $a1, $s1
+		li $s1, -1
+		li $s0, 0
+		add $a1, $a1, $s1
+		jal _getLED
+		beq $v0, 0, finishmovesnake
+		beq $v0, 2, yellow
+		beq $v0, 3, green
+		#if it is red up, checks down
+		sub $a1, $a1, $s1
+		li $s1, 1
+		add $a1, $a1, $s1
+		jal _getLED
+		beq $v0, 0, finishmovesnake
+		beq $v0, 2, yellow
+		beq $v0, 3, green
+		#if red again exit
+		
+		j EXIT
 	yellow:
 		bne $v0, 2, green
 		#if yellow:
