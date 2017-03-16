@@ -214,14 +214,20 @@ j EXIT
 #void _delay()
 	#delays based on how many iterations of a loop has to be completed
 	#arguments: none
-	#trashes: $t0
+	#trashes: $t0, $t1
 	#returns: none
 	
 _delay:
-	li $t0, 100000
-	delayloop:
-	subi $t0, $t0, 1
-	bnez $t0, delayloop
+	#gets initial timing
+	li $t0, 0
+	li $v0, 30
+     	syscall
+	move $t1, $a0
+	start_delay:
+		li $v0, 30
+     		syscall
+     		sub $t0, $a0, $t1
+     		blt $t0, 250, start_delay
 	jr $ra
 
 
@@ -518,6 +524,13 @@ _getLED:
 EXIT:
 	li $v0, 4
 	la $a0, B
+	syscall
+	
+	#multiply counter times delay to find total runtime
+	li $t0, 250
+	multu $s2, $t0
+	mflo $a0
+	li $v0, 1
 	syscall
 	
 	li $v0, 4
