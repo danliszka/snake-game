@@ -218,8 +218,7 @@ j EXIT
 	#returns: none
 	
 _delay:
-	#li $t0, 100000 #USE FOR PC
-	li $t0, 175 #USE FOR MAC
+	li $t0, 100000
 	delayloop:
 	subi $t0, $t0, 1
 	bnez $t0, delayloop
