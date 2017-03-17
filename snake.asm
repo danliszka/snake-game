@@ -1,9 +1,6 @@
 #Daniel Liszka
 #Jenn Gingerich
 
-#TO DO:
-#-what happens when a red dot is next
-
 .data
 board: 
 .ascii "*************************    *****************    **************"
@@ -17,17 +14,17 @@ board:
 .ascii "*                                            *                 *"
 .ascii "*                                            *                 *"
 .ascii "*                     ***                    *    *            *"
-.ascii "*                     ***                    *    *            *"
-.ascii "*                                            *    *            *"
-.ascii "*                                            *    **************"
-.ascii "                                             *                  "
-.ascii "                                             *                  "
+.ascii "*                     * *                    *    *            *"
+.ascii "*                     * *                    *    *            *"
+.ascii "*                    *   *                   *    **************"
+.ascii "                    *     *                  *                  "
+.ascii "                    *     *                  *                  "
 .ascii "*                                            *******************"
 .ascii "*                                                              *"
 .ascii "*                                                              *"
 .ascii "*                                                              *"
 .ascii "*                                        ***                   *"
-.ascii "*                                        ***                   *"
+.ascii "*                                        * *                   *"
 .ascii "*                                                              *"
 .ascii "*                                                              *"
 .ascii "*                                                              *"
@@ -76,7 +73,7 @@ snake: .space 64
 A: .asciiz ""
 B: .asciiz "Game over\nThe playing  time  was\n"
 C: .asciiz " ms. The game  score\n"
-D: .asciiz " was "
+D: .asciiz "was "
 E: .asciiz " frogs."
 
 #s0 will store increment for x
@@ -204,7 +201,7 @@ MAIN:
 	jal _delay
 	addi $s2, $s2, 1 #increments how many times there was a delay then will convert to total time at end
 	jal _moveSnake
-	bne $s2, 5000, MAIN #allow for a maximum of 5000 movements
+	bne $s2, 50000, MAIN #allow for a maximum of 50000 movements
 
 
 
@@ -227,7 +224,7 @@ _delay:
 		li $v0, 30
      		syscall
      		sub $t0, $a0, $t1
-     		blt $t0, 250, start_delay
+     		blt $t0, 200, start_delay
 	jr $ra
 
 
@@ -529,7 +526,7 @@ EXIT:
 	syscall
 	
 	#multiply counter times delay to find total runtime
-	li $t0, 250
+	li $t0, 200
 	multu $s2, $t0
 	mflo $a0
 	li $v0, 1
@@ -550,4 +547,3 @@ EXIT:
 	li $v0, 4
 	la $a0, E
 	syscall
-	
