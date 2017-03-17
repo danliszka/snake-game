@@ -340,8 +340,8 @@ _moveSnake:
 		sub $a1, $a1, $s1
 		add $a0, $a0, $t4
 		add $a1, $a1, $t5
-		add $s0, $s0, $t4
-		add $s1, $s1, $t5
+		add $s0, $zero, $t4
+		add $s1, $zero, $t5
 		j finishmovesnake
 		
 		
