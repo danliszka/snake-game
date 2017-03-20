@@ -1,5 +1,5 @@
-#Daniel Liszka
-#Jenn Gingerich
+#Daniel Liszka: dal148@pitt.edu
+#Jenn Gingerich: jag236@pitt.edu
 
 .data
 board: 
